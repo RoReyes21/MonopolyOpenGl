@@ -1582,10 +1582,10 @@ int main()
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
-		/*if (now >= change_ambientacion) {
+		if (now >= change_ambientacion) {
 			dia = !dia;
 			change_ambientacion = now + SEGUNDOS_PARA_CAMBIAR_DIA_NOCHE;
-		}*/
+		}
 
 		glfwPollEvents();
 
