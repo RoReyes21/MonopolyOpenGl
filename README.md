@@ -1,9 +1,8 @@
-# MonopolyOpenGl
+# MonopolyOpenGL
 
-Facultad de Ingenieria
-Computacion Grafica e Interaccion Humano Computadora
-Proyecto Final
+## Facultad de Ingeniería
 
-Integrantes:
-Rodrigo Miguel Reyes Valderrama
-Diego Emir Lopez Cantarell
+### Computación Gráfica e Interacción Humano-Computadora  
+**Proyecto Final - Práctica 10: Key Frames**
+
+**Autor**: Reyes Valderrama Rodrigo Miguel
