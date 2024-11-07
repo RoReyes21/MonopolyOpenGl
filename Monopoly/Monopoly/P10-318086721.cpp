@@ -207,13 +207,19 @@ unsigned int current_num_spots_lights = 0;
 PointLight current_points_lights[MAX_POINT_LIGHTS];
 unsigned int current_num_points_lights = 0;
 
+//KEYFRAME
+FILE* archivo_keyf;
+//variables para keyframes
+float reproduciranimacion, habilitaranimacion, guardoFrame, reinicioFrame, ciclo, ciclo2, contador = 0;
+
 // Vertex Shader
 static const char* vShader = "shaders/shader_light.vert";
 
 // Fragment Shader
 static const char* fShader = "shaders/shader_light.frag";
 
-//void IniciarCamaras();
+//función para teclado de keyframes 
+void inputKeyframes(bool* keys);
 
 /**
 * Funcion para calcular las normales
@@ -1154,6 +1160,150 @@ glm::vec3 get_main_light_position(float elapsed_time) {
 	return glm::mix(glm::vec3(-8.0f, -1.0f, 0.0f), glm::vec3(8.0f, -1.0f, 0.0f), t); // Interpolación lineal
 }
 
+//**************************Key frames*********************************
+bool animacion = false;
+
+//NEW// Keyframes
+float posXLaboon = 2.0, posYLaboon = 5.0, posZLaboon = 0.0;
+float	movLaboon_z = 0.0f, movLaboon_y = 0.0f;
+float giroLaboon = 0;
+
+#define MAX_FRAMES 100
+int i_max_steps = 90;
+int i_curr_steps = 0;
+typedef struct _frame
+{
+	//Variables para GUARDAR Key Frames
+	float movLaboon_z;		//Variable para PosicionX
+	float movLaboon_y;		//Variable para PosicionY
+	float movLaboon_zInc;		//Variable para IncrementoX
+	float movLaboon_yInc;		//Variable para IncrementoY
+	float giroLaboon;
+	float giroLaboonInc;
+}FRAME;
+
+FRAME KeyFrame[MAX_FRAMES];
+int FrameIndex = 0;			//introducir datos
+bool play = false;
+int playIndex = 0;
+
+void resetElements(void) //Tecla 0
+{
+
+	movLaboon_z = KeyFrame[0].movLaboon_z;
+	movLaboon_y = KeyFrame[0].movLaboon_y;
+	giroLaboon = KeyFrame[0].giroLaboon;
+}
+
+void interpolation(void)
+{
+	KeyFrame[playIndex].movLaboon_zInc = (KeyFrame[playIndex + 1].movLaboon_z - KeyFrame[playIndex].movLaboon_z) / i_max_steps;
+	KeyFrame[playIndex].movLaboon_yInc = (KeyFrame[playIndex + 1].movLaboon_y - KeyFrame[playIndex].movLaboon_y) / i_max_steps;
+	KeyFrame[playIndex].giroLaboonInc = (KeyFrame[playIndex + 1].giroLaboon - KeyFrame[playIndex].giroLaboon) / i_max_steps;
+}
+
+void animate(void)
+{
+	//Movimiento del objeto con barra espaciadora
+	if (play)
+	{
+		if (i_curr_steps >= i_max_steps) //fin de animación entre frames?
+		{
+			playIndex++;
+			printf("playindex : %d\n", playIndex);
+			if (playIndex > FrameIndex - 2)	//Fin de toda la animación con último frame?
+			{
+				printf("Frame index= %d\n", FrameIndex);
+				printf("termino la animacion\n");
+				playIndex = 0;
+				play = false;
+			}
+			else //Interpolación del próximo cuadro
+			{
+
+				i_curr_steps = 0; //Resetea contador
+				//Interpolar
+				interpolation();
+			}
+		}
+		else
+		{
+			//Dibujar Animación
+			movLaboon_z += KeyFrame[playIndex].movLaboon_zInc;
+			movLaboon_y += KeyFrame[playIndex].movLaboon_yInc;
+			giroLaboon += KeyFrame[playIndex].giroLaboonInc;
+			i_curr_steps++;
+		}
+
+	}
+}
+
+void saveFrame()
+{
+	fopen_s(&archivo_keyf, "registro_key_frame.txt", "a");
+	if (archivo_keyf == NULL) {
+		printf("Error: no se puede abrir registro_key_frame.txt\n");
+		return;
+	}
+
+	KeyFrame[FrameIndex].movLaboon_z = movLaboon_z;
+	KeyFrame[FrameIndex].movLaboon_y = movLaboon_y;
+	KeyFrame[FrameIndex].giroLaboon = giroLaboon;
+
+	printf("Key Frame index: %d\n", FrameIndex);
+
+	fprintf(archivo_keyf, "KeyFrame[%d].movLaboon_z = %.2lf; \n", FrameIndex, KeyFrame[FrameIndex].movLaboon_z);
+	fprintf(archivo_keyf, "KeyFrame[%d].movLaboon_y = %.2lf; \n", FrameIndex, KeyFrame[FrameIndex].movLaboon_y);
+	fprintf(archivo_keyf, "KeyFrame[%d].giroLaboon = %.2lf; \n", FrameIndex, KeyFrame[FrameIndex].giroLaboon);
+	FrameIndex++;
+
+	if (archivo_keyf != NULL) {
+		if (fclose(archivo_keyf) == 0) {
+			printf("Se cerro registro_key_frame.txt\n");
+		}
+		else {
+			printf("Error al cerrar registro_key_frame.txt\n");
+		}
+		archivo_keyf = NULL;
+	}
+
+	printf("Key Frame guardado con exito!!\n");
+}
+void read_keyf_file() {
+	FILE* ReadFile;
+	fopen_s(&ReadFile, "registro_key_frame.txt", "r");
+
+	if (ReadFile == NULL) {
+		printf("Error: No se encuentra el archivo\n");
+		return;
+	}
+
+	char line[256];
+	FrameIndex = 0;
+
+	while (fgets(line, sizeof(line), ReadFile)) {
+		int index;
+		float mov_z;
+		float mov_y;
+		float giro;
+
+		if (sscanf_s(line, "KeyFrame[%d].movLaboon_z = %f;", &index, &mov_z) == 2) {
+			KeyFrame[FrameIndex].movLaboon_z = mov_z;
+			if (fgets(line, sizeof(line), ReadFile) && sscanf_s(line, "KeyFrame[%d].movLaboon_y = %f;", &index, &mov_y) == 2) {
+				KeyFrame[FrameIndex].movLaboon_y = mov_y;
+				if (fgets(line, sizeof(line), ReadFile) && sscanf_s(line, "KeyFrame[%d].giroLaboon = %f;", &index, &giro) == 2) {
+					KeyFrame[FrameIndex].giroLaboon = giro;
+					printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+					printf("Indice KeyFrame %d leido: movLaboon_z = %.2f, movLaboon_y = %.2f, giroLaboon = %.2f\n", FrameIndex, mov_z, mov_y, giro);
+					FrameIndex++;
+				}
+			}
+		}
+	}
+
+	fclose(ReadFile);
+	printf("SE TERMINIO DE LEER EL ACHIVO DE KEY FRAMES CON EXITO!!\n");
+}
 
 
 int main()
@@ -1165,6 +1315,7 @@ int main()
 	CreateShaders();
 	CrearDado();
 	IniciarCamaras();
+	read_keyf_file();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
@@ -1405,11 +1556,23 @@ int main()
 	float ovni_rotate = 0;
 	float velocidad_rotate_ovni = 2.0f;
 
-	glfwSetTime(0);
 
 	//++++++++++++++++++Dia y Noche+++++++++++++++++++++
 	GLfloat change_ambientacion = glfwGetTime() + SEGUNDOS_PARA_CAMBIAR_DIA_NOCHE;
 	bool dia = true;
+
+	//keyframe
+	glm::vec3 posLaboon = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	system("cls");
+
+	printf("Controles:\n" "Espacio: Inicia/detiene la animacion\n" "Tecla 0: Permite reiniciar la animacion\n" "Tecla L: Guarda el estado actual (frame)\n"
+		"Tecla P: Permite guardar otro frame\n" "Tecla 1: Disminuye movLaboon_z\n" "Tecla 2: Habilita modificacion de movLaboon_z con tecla 1\n"
+		"Tecla 3: Aumenta movLaboon_z\n" "Tecla 4: Habilita modificacion de movLaboon_z con tecla 3\n" "Tecla 5: Disminuye movLaboon_y\n" "Tecla 6: Habilita modificacion de movLaboon_y con tecla 5\n"
+		"Tecla 7: Aumenta movLaboon_y\n" "Tecla 8: Habilita modificacion de movLaboon_y con tecla 7\n" "Tecla 9: Aumenta giroLaboon en 90 grados\n"
+		"Tecla E: Habilita modificacion de giroLaboon con tecla 9\n");
+
+	glfwSetTime(0);
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -1419,10 +1582,10 @@ int main()
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
-		if (now >= change_ambientacion) {
+		/*if (now >= change_ambientacion) {
 			dia = !dia;
 			change_ambientacion = now + SEGUNDOS_PARA_CAMBIAR_DIA_NOCHE;
-		}
+		}*/
 
 		glfwPollEvents();
 
@@ -1430,6 +1593,10 @@ int main()
 
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+
+		//-------Para Keyframes
+		inputKeyframes(mainWindow.getsKeys());
+		animate();
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1766,9 +1933,13 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		edificio4.RenderModel();
 
+
+		//*****************************Ballena animada por keyFrames********************************
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(200.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
+		posLaboon = glm::vec3(200.0f, movLaboon_y, movLaboon_z);
+		model = glm::translate(model, posLaboon);
+		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		model = glm::rotate(model, glm::radians(giroLaboon), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		laboon.RenderModel();
@@ -1896,4 +2067,181 @@ int main()
 	}
 
 	return 0;
+}
+
+
+
+void inputKeyframes(bool* keys)
+{
+	if (keys[GLFW_KEY_SPACE])
+	{
+		if (reproduciranimacion < 1)
+		{
+			if (play == false && (FrameIndex > 1))
+			{
+				resetElements();
+				//First Interpolation				
+				interpolation();
+				play = true;
+				playIndex = 0;
+				i_curr_steps = 0;
+				reproduciranimacion++;
+				printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
+				habilitaranimacion = 0;
+
+			}
+			else
+			{
+				play = false;
+
+			}
+		}
+	}
+	if (keys[GLFW_KEY_0])
+	{
+		if (habilitaranimacion < 1 && reproduciranimacion>0)
+		{
+			printf("Ya puedes reproducir de nuevo la animación con la tecla de barra espaciadora'\n");
+			reproduciranimacion = 0;
+			habilitaranimacion++;
+
+		}
+	}
+
+	if (keys[GLFW_KEY_L])
+	{
+		if (guardoFrame < 1)
+		{
+			saveFrame();
+			printf("movLaboon_z es: %f\n", movLaboon_z);
+			printf("movLaboon_y es: %f\n", movLaboon_y);
+			printf("giroLaboon  es: %f\n", giroLaboon);
+			printf("presiona P para habilitar guardar otro frame'\n");
+			guardoFrame++;
+			reinicioFrame = 0;
+		}
+	}
+	if (keys[GLFW_KEY_P])
+	{
+		if (reinicioFrame < 1)
+		{
+			guardoFrame = 0;
+			reinicioFrame++;
+			printf("Ya puedes guardar otro frame presionando la tecla L'\n");
+		}
+	}
+
+
+	if (keys[GLFW_KEY_1])
+	{
+		if (ciclo < 1)
+		{
+			movLaboon_z -= 1.0f;
+			printf("\n movLaboon_z es: %f\n", movLaboon_z);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 2 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_2])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 1\n");
+		}
+	}
+
+	if (keys[GLFW_KEY_3])
+	{
+		if (ciclo < 1)
+		{
+			movLaboon_z += 1.0f;
+			printf("\n movLaboon_z es: %f\n", movLaboon_z);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 4 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_4])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 3\n");
+		}
+	}
+
+	if (keys[GLFW_KEY_5])
+	{
+		if (ciclo < 1)
+		{
+			movLaboon_y -= 1.0f;
+			printf("\n movLaboon_y es: %f\n", movLaboon_y);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 6 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_6])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 5\n");
+		}
+	}
+
+	if (keys[GLFW_KEY_7])
+	{
+		if (ciclo < 1)
+		{
+			movLaboon_y += 1.0f;
+			printf("\n movLaboon_y es: %f\n", movLaboon_y);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 8 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_8])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 7\n");
+		}
+	}
+
+
+	if (keys[GLFW_KEY_9])
+	{
+		if (ciclo < 1)
+		{
+			//printf("movLaboon_z es: %f\n", movLaboon_z);
+			giroLaboon += 90.0f;
+			printf("\n girLaboon es: %f\n", giroLaboon);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla E para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_E])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 9\n");
+		}
+	}
+
 }

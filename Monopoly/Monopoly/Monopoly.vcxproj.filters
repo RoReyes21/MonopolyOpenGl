@@ -33,7 +33,7 @@
     <ClCompile Include="Model.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="P10-318086721.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
