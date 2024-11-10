@@ -1,0 +1,150 @@
+KeyFrame[0].movBarco_x = 0.000000;
+KeyFrame[0].movBarco_y = 0.000000;
+KeyFrame[0].movBarco_z = -1.000000;
+KeyFrame[0].giroBarco = 0.000000;
+
+KeyFrame[1].movBarco_x = 0.000000;
+KeyFrame[1].movBarco_y = 0.000000;
+KeyFrame[1].movBarco_z = -3.000000;
+KeyFrame[1].giroBarco = 0.000000;
+
+KeyFrame[2].movBarco_x = 0.000000;
+KeyFrame[2].movBarco_y = 0.000000;
+KeyFrame[2].movBarco_z = -3.000000;
+KeyFrame[2].giroBarco = 0.000000;
+
+KeyFrame[3].movBarco_x = 0.000000;
+KeyFrame[3].movBarco_y = 0.000000;
+KeyFrame[3].movBarco_z = -4.000000;
+KeyFrame[3].giroBarco = 0.000000;
+
+KeyFrame[4].movBarco_x = 0.000000;
+KeyFrame[4].movBarco_y = 0.000000;
+KeyFrame[4].movBarco_z = -5.000000;
+KeyFrame[4].giroBarco = 0.000000;
+
+KeyFrame[5].movBarco_x = 0.000000;
+KeyFrame[5].movBarco_y = 0.000000;
+KeyFrame[5].movBarco_z = -11.000000;
+KeyFrame[5].giroBarco = 0.000000;
+
+KeyFrame[6].movBarco_x = 0.000000;
+KeyFrame[6].movBarco_y = 0.000000;
+KeyFrame[6].movBarco_z = -13.000000;
+KeyFrame[6].giroBarco = 0.000000;
+
+KeyFrame[7].movBarco_x = 0.000000;
+KeyFrame[7].movBarco_y = 0.000000;
+KeyFrame[7].movBarco_z = -14.000000;
+KeyFrame[7].giroBarco = 0.000000;
+
+KeyFrame[8].movBarco_x = 0.000000;
+KeyFrame[8].movBarco_y = 0.000000;
+KeyFrame[8].movBarco_z = -16.000000;
+KeyFrame[8].giroBarco = 0.000000;
+
+KeyFrame[9].movBarco_x = 0.000000;
+KeyFrame[9].movBarco_y = 0.000000;
+KeyFrame[9].movBarco_z = -17.000000;
+KeyFrame[9].giroBarco = 0.000000;
+
+KeyFrame[10].movBarco_x = 0.000000;
+KeyFrame[10].movBarco_y = 0.000000;
+KeyFrame[10].movBarco_z = -22.000000;
+KeyFrame[10].giroBarco = 0.000000;
+
+KeyFrame[11].movBarco_x = 0.000000;
+KeyFrame[11].movBarco_y = 0.000000;
+KeyFrame[11].movBarco_z = -29.000000;
+KeyFrame[11].giroBarco = 0.000000;
+
+KeyFrame[12].movBarco_x = 0.000000;
+KeyFrame[12].movBarco_y = 0.000000;
+KeyFrame[12].movBarco_z = -29.000000;
+KeyFrame[12].giroBarco = 30.000000;
+
+KeyFrame[13].movBarco_x = 0.000000;
+KeyFrame[13].movBarco_y = 0.000000;
+KeyFrame[13].movBarco_z = -29.000000;
+KeyFrame[13].giroBarco = 30.000000;
+
+KeyFrame[14].movBarco_x = 0.000000;
+KeyFrame[14].movBarco_y = 0.000000;
+KeyFrame[14].movBarco_z = -29.000000;
+KeyFrame[14].giroBarco = 60.000000;
+
+KeyFrame[15].movBarco_x = 0.000000;
+KeyFrame[15].movBarco_y = 0.000000;
+KeyFrame[15].movBarco_z = -29.000000;
+KeyFrame[15].giroBarco = 60.000000;
+
+KeyFrame[16].movBarco_x = 0.000000;
+KeyFrame[16].movBarco_y = 0.000000;
+KeyFrame[16].movBarco_z = -29.000000;
+KeyFrame[16].giroBarco = 60.000000;
+
+KeyFrame[17].movBarco_x = 0.000000;
+KeyFrame[17].movBarco_y = 0.000000;
+KeyFrame[17].movBarco_z = -29.000000;
+KeyFrame[17].giroBarco = 60.000000;
+
+KeyFrame[18].movBarco_x = 0.000000;
+KeyFrame[18].movBarco_y = 0.000000;
+KeyFrame[18].movBarco_z = -29.000000;
+KeyFrame[18].giroBarco = 60.000000;
+
+KeyFrame[19].movBarco_x = 0.000000;
+KeyFrame[19].movBarco_y = 0.000000;
+KeyFrame[19].movBarco_z = -29.000000;
+KeyFrame[19].giroBarco = 60.000000;
+
+KeyFrame[20].movBarco_x = 0.000000;
+KeyFrame[20].movBarco_y = 0.000000;
+KeyFrame[20].movBarco_z = -29.000000;
+KeyFrame[20].giroBarco = 870.000000;
+
+KeyFrame[21].movBarco_x = 0.000000;
+KeyFrame[21].movBarco_y = 0.000000;
+KeyFrame[21].movBarco_z = -29.000000;
+KeyFrame[21].giroBarco = 870.000000;
+
+KeyFrame[22].movBarco_x = 0.000000;
+KeyFrame[22].movBarco_y = 0.000000;
+KeyFrame[22].movBarco_z = -29.000000;
+KeyFrame[22].giroBarco = 1260.000000;
+
+KeyFrame[23].movBarco_x = 0.000000;
+KeyFrame[23].movBarco_y = 0.000000;
+KeyFrame[23].movBarco_z = -29.000000;
+KeyFrame[23].giroBarco = 1260.000000;
+
+KeyFrame[24].movBarco_x = -1.000000;
+KeyFrame[24].movBarco_y = 0.000000;
+KeyFrame[24].movBarco_z = -27.000000;
+KeyFrame[24].giroBarco = 1260.000000;
+
+KeyFrame[25].movBarco_x = -1.000000;
+KeyFrame[25].movBarco_y = 0.000000;
+KeyFrame[25].movBarco_z = -27.000000;
+KeyFrame[25].giroBarco = 1260.000000;
+
+KeyFrame[26].movBarco_x = -1.000000;
+KeyFrame[26].movBarco_y = 0.000000;
+KeyFrame[26].movBarco_z = -26.000000;
+KeyFrame[26].giroBarco = 1260.000000;
+
+KeyFrame[27].movBarco_x = -1.000000;
+KeyFrame[27].movBarco_y = 0.000000;
+KeyFrame[27].movBarco_z = -24.000000;
+KeyFrame[27].giroBarco = 1260.000000;
+
+KeyFrame[28].movBarco_x = -1.000000;
+KeyFrame[28].movBarco_y = 0.000000;
+KeyFrame[28].movBarco_z = -17.000000;
+KeyFrame[28].giroBarco = 1260.000000;
+
+KeyFrame[29].movBarco_x = -1.000000;
+KeyFrame[29].movBarco_y = 0.000000;
+KeyFrame[29].movBarco_z = -1.000000;
+KeyFrame[29].giroBarco = 1260.000000;
+

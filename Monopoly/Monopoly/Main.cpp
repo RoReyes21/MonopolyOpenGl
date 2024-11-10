@@ -1,4 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #include <string.h>
@@ -207,6 +208,10 @@ unsigned int current_num_spots_lights = 0;
 PointLight current_points_lights[MAX_POINT_LIGHTS];
 unsigned int current_num_points_lights = 0;
 
+//KeyFrame
+float reproduciranimacion, habilitaranimacion, guardoFrame, reinicioFrame, ciclo, ciclo2, contador = 0;
+
+void inputKeyframes(bool* keys);
 // Vertex Shader
 static const char* vShader = "shaders/shader_light.vert";
 
@@ -475,7 +480,148 @@ void IniciarCamaras() {
 	currentCamera = &camaraLibre;
 }
 
+bool animacion = false;
 
+//NEW// Keyframes
+float posXBarco = 2.0, posYBarco = 5.0, posZBarco = 0.0;
+float	movBarco_z = 0.0f, movBarco_y = 0.0f, movBarco_x = 0.0f;
+float giroBarco = 0;
+FILE* file = NULL;
+
+#define MAX_FRAMES 100
+int i_max_steps = 90;
+int i_curr_steps = 0;
+typedef struct _frame
+{
+	//Variables para GUARDAR Key Frames
+	float movBarco_x;
+	float movBarco_z;		
+	float movBarco_y;		
+	float movBarco_zInc;		
+	float movBarco_yInc;		
+	float giroBarco;
+	float giroBarcoInc;
+}FRAME;
+
+FRAME KeyFrame[MAX_FRAMES];
+int FrameIndex = 0;			//introducir datos
+bool play = false;
+int playIndex = 0;
+
+void resetElements(void) //Tecla 0
+{
+
+	movBarco_z = KeyFrame[0].movBarco_z;
+	movBarco_y = KeyFrame[0].movBarco_y;
+	giroBarco = KeyFrame[0].giroBarco;
+}
+
+void interpolation(void)
+{
+	KeyFrame[playIndex].movBarco_zInc = (KeyFrame[playIndex + 1].movBarco_z - KeyFrame[playIndex].movBarco_z) / i_max_steps;
+	KeyFrame[playIndex].movBarco_yInc = (KeyFrame[playIndex + 1].movBarco_y - KeyFrame[playIndex].movBarco_y) / i_max_steps;
+	KeyFrame[playIndex].giroBarcoInc = (KeyFrame[playIndex + 1].giroBarco - KeyFrame[playIndex].giroBarco) / i_max_steps;
+}
+
+void animate(void)
+{
+	//Movimiento del objeto con barra espaciadora
+	if (play)
+	{
+		if (i_curr_steps >= i_max_steps) //fin de animación entre frames?
+		{
+			playIndex++;
+			printf("playindex : %d\n", playIndex);
+			if (playIndex > FrameIndex - 2)	//Fin de toda la animación con último frame?
+			{
+				printf("Frame index= %d\n", FrameIndex);
+				printf("termino la animacion\n");
+				playIndex = 0;
+				play = false;
+			}
+			else //Interpolación del próximo cuadro
+			{
+
+				i_curr_steps = 0; //Resetea contador
+				//Interpolar
+				interpolation();
+			}
+		}
+		else
+		{
+			//Dibujar Animación
+			movBarco_z += KeyFrame[playIndex].movBarco_zInc;
+			movBarco_y += KeyFrame[playIndex].movBarco_yInc;
+			giroBarco += KeyFrame[playIndex].giroBarcoInc;
+			i_curr_steps++;
+		}
+
+	}
+}
+
+void saveFrame(void) // tecla L
+{
+	printf("frameindex %d\n", FrameIndex);
+
+	// Guardar el frame en la estructura KeyFrame
+	KeyFrame[FrameIndex].movBarco_x = movBarco_x;
+	KeyFrame[FrameIndex].movBarco_y = movBarco_y;
+	KeyFrame[FrameIndex].movBarco_z = movBarco_z;
+	KeyFrame[FrameIndex].giroBarco = giroBarco;
+
+	// Guardar el KeyFrame en el archivo de texto
+	if (file == NULL)
+	{
+		// Abre el archivo en modo de escritura, si no existe lo crea
+		file = fopen("KeyFrame.txt", "w");
+		if (file == NULL)
+		{
+			printf("Error al abrir el archivo para guardar los frames.\n");
+			return;
+		}
+	}
+
+	// Escribir los datos del KeyFrame en el archivo
+	fprintf(file, "KeyFrame[%d].movBarco_x = %f;\n", FrameIndex, KeyFrame[FrameIndex].movBarco_x);
+	fprintf(file, "KeyFrame[%d].movBarco_y = %f;\n", FrameIndex, KeyFrame[FrameIndex].movBarco_y);
+	fprintf(file, "KeyFrame[%d].movBarco_z = %f;\n", FrameIndex, KeyFrame[FrameIndex].movBarco_z); 
+	fprintf(file, "KeyFrame[%d].giroBarco = %f;\n\n", FrameIndex, KeyFrame[FrameIndex].giroBarco);
+
+	FrameIndex++;
+}
+
+void readFile() {
+	FILE* ReadFile;
+	fopen_s(&ReadFile, "KeyFrame.txt", "r");
+
+	if (ReadFile == NULL) {
+		printf("Error: No se encuentra el archivo\n");
+		return;
+	}
+
+	char line[256];
+	FrameIndex = 0;
+
+	while (fgets(line, sizeof(line), ReadFile)) {
+		int index;
+		float mov_z;
+		float mov_y;
+		float mov_x;
+		float giro;
+
+		if (sscanf_s(line, "KeyFrame[%d].movBarco_x = %f;", &index, &mov_x) == 2) {
+			KeyFrame[FrameIndex].movBarco_x = mov_x;
+			if (fgets(line, sizeof(line), ReadFile) && sscanf_s(line, "KeyFrame[%d].movBarco_z = %f;", &index, &mov_z) == 2) {
+				KeyFrame[FrameIndex].movBarco_z = mov_z;
+				if (fgets(line, sizeof(line), ReadFile) && sscanf_s(line, "KeyFrame[%d].giroBarco = %f;", &index, &giro) == 2) {
+					KeyFrame[FrameIndex].giroBarco = giro;
+					FrameIndex++;
+				}
+			}
+		}
+	}
+	fclose(ReadFile);
+}
 
 void setCamera(GLint cameraNumber) {
 
@@ -1166,6 +1312,8 @@ int main()
 	CrearDado();
 	IniciarCamaras();
 
+	glm::vec3 posBarco = glm::vec3(0.0f, 0.0f, 0.0f);
+	readFile();
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
 	// +++++++++++++++++++++++++++++++++Texturas+++++++++++++++++++++++++++++++
@@ -1411,6 +1559,13 @@ int main()
 	GLfloat change_ambientacion = glfwGetTime() + SEGUNDOS_PARA_CAMBIAR_DIA_NOCHE;
 	bool dia = true;
 
+	//Instrucciones para la animación por KeyFrames
+	printf("Controles:\n" "Espacio: Inicia/detiene la animacion\n" "Tecla 0: Permite reiniciar la animacion\n" "Tecla L: Guarda el estado actual (frame)\n"
+		"Tecla P: Permite guardar otro frame\n" "Tecla 1: Disminuye movBarco_z\n" "Tecla 2: Habilita modificacion de movBarco_z con tecla 1\n"
+		"Tecla 3: Aumenta movBarco_z\n" "Tecla 4: Habilita modificacion de movBarco_z con tecla 3\n" "Tecla 5: Disminuye movBarco_x\n" "Tecla 6: Habilita modificacion de movBarco_x con tecla 5\n"
+		"Tecla 7: Aumenta movBarco_x\n" "Tecla 8: Habilita modificacion de movBarco_x con tecla 7\n" "Tecla 9: Aumenta giroBarco en 90 grados\n"
+		"Tecla I: Habilita modificacion de giroBarco con tecla 9\n");
+	
 	while (!mainWindow.getShouldClose())
 	{
 
@@ -1425,6 +1580,10 @@ int main()
 		}
 
 		glfwPollEvents();
+
+		//KeyFrames
+		inputKeyframes(mainWindow.getsKeys());
+		animate();
 
 		setCamera(mainWindow.getTipoCamara());
 
@@ -1703,10 +1862,15 @@ int main()
 		}
 
 		//Ciudad
+
+		//Modelo usado para animación por KeyFrames
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(130.0f, 0.0f, 130.0f));
+		//model = glm::translate(model, glm::vec3(130.0f, 0.0f, 130.0f));
+		posBarco = glm::vec3(130.0f + movBarco_x, movBarco_y,130.0f + movBarco_z);
+		model = glm::translate(model, posBarco);
 		model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(giroBarco), glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		merry.RenderModel();
 
@@ -1896,4 +2060,181 @@ int main()
 	}
 
 	return 0;
+}
+
+
+void inputKeyframes(bool* keys)
+{
+	if (keys[GLFW_KEY_M])
+	{
+		if (reproduciranimacion < 1)
+		{
+			if (play == false && (FrameIndex > 1))
+			{
+				resetElements();
+				interpolation();
+				play = true;
+				playIndex = 0;
+				i_curr_steps = 0;
+				reproduciranimacion++;
+				printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
+				habilitaranimacion = 0;
+			}
+			else
+			{
+				play = false;
+			}
+		}
+	}
+
+	if (keys[GLFW_KEY_0])
+	{
+		if (habilitaranimacion < 1 && reproduciranimacion > 0)
+		{
+			printf("Ya puedes reproducir de nuevo la animación con la tecla de barra espaciadora'\n");
+			reproduciranimacion = 0;
+			habilitaranimacion++;
+		}
+	}
+
+	if (keys[GLFW_KEY_L])
+	{
+		if (guardoFrame < 1)
+		{
+			saveFrame();
+			printf("movBarco_x es: %f\n", movBarco_x);
+			printf("movBarco_y es: %f\n", movBarco_y);
+			printf("giroBarco  es: %f\n", giroBarco);
+			printf("presiona P para habilitar guardar otro frame'\n");
+			guardoFrame++;
+			reinicioFrame = 0;
+		}
+	}
+
+	if (keys[GLFW_KEY_P])
+	{
+		if (reinicioFrame < 1)
+		{
+			guardoFrame = 0;
+			reinicioFrame++;
+			printf("Ya puedes guardar otro frame presionando la tecla L'\n");
+		}
+	}
+
+
+	if (keys[GLFW_KEY_1])
+	{
+		if (ciclo < 1)
+		{
+			printf("movBarco_z es: %f\n", movBarco_z);
+			movBarco_z -= 1.0f;
+			printf("\n movBarco_z es: %f\n", movBarco_z);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 2 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_2])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 1\n");
+		}
+	}
+
+	if (keys[GLFW_KEY_3])
+	{
+		if (ciclo < 1)
+		{
+			printf("movBarco_z es: %f\n", movBarco_z);
+			movBarco_z += 1.0f;
+			printf("\n movBarco_z es: %f\n", movBarco_z);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 4 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_4])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 3\n");
+		}
+	}
+
+	if (keys[GLFW_KEY_5])
+	{
+		if (ciclo < 1)
+		{
+			printf("movBarco_x es: %f\n", movBarco_x);
+			movBarco_x -= 1.0f;
+			//printf("\n movBarco_y es: %f\n", movBarco_y);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 6 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_6])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 5\n");
+		}
+	}
+
+	if (keys[GLFW_KEY_7])
+	{
+		if (ciclo < 1)
+		{
+			printf("movBarco_x es: %f\n", movBarco_x);
+			movBarco_x += 1.0f;
+			//printf("\n movBarco_y es: %f\n", movBarco_y);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla 8 para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_8])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 7\n");
+		}
+	}
+
+
+	if (keys[GLFW_KEY_9])
+	{
+		if (ciclo < 1)
+		{
+			//printf("movBarco_x es: %f\n", movAvion_x);
+			giroBarco += 30.0f;
+			printf("\n girBarco es: %f\n", giroBarco);
+			ciclo++;
+			ciclo2 = 0;
+			printf("\n Presiona la tecla Q para poder habilitar la variable\n");
+		}
+
+	}
+	if (keys[GLFW_KEY_I])
+	{
+		if (ciclo2 < 1)
+		{
+			ciclo = 0;
+			ciclo2++;
+			printf("\n Ya puedes modificar tu variable presionando la tecla 9\n");
+		}
+	}
 }
